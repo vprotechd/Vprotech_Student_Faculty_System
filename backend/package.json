@@ -1,0 +1,32 @@
+{
+  "name": "student-faculty-admin-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Student Faculty Admin Mobile Application",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed:admin": "node scripts_seed_admin.js"
+  },
+  "dependencies": {
+    "agora-token": "^2.0.7",
+    "bcryptjs": "^3.0.0",
+    "cloudinary": "^2.11.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.2.1",
+    "socket.io": "^4.8.4",
+    "streamifier": "^0.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

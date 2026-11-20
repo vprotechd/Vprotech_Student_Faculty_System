@@ -1,0 +1,15 @@
+import express from "express";
+import { register, login, getCurrentUser, changePassword, logout, heartbeat, verifyEmail, resendVerificationEmail, } from "../controllers/authController.js";
+import requireAuth from "../middleware/authMiddleware.js";
+import { registerValidation, loginValidation, checkValidation } from "../utils/authValidators.js.js";
+const router = express.Router();
+router.post("/register", registerValidation, checkValidation, register);
+router.post("/signup", registerValidation, checkValidation, register);
+router.post("/login", loginValidation, checkValidation, login);
+router.post("/change-password", requireAuth, changePassword);
+router.post("/logout", requireAuth, logout);
+router.post("/heartbeat", requireAuth, heartbeat);
+router.get("/me", requireAuth, getCurrentUser);
+router.get('/verify-email', verifyEmail);
+router.post('/resend-verification', resendVerificationEmail);
+export default router;
