@@ -1,11 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 
 const defaultBaseURL =
-  Platform.OS === 'android'
-    ? 'http://10.0.2.2:5000/api'
-    : 'http://localhost:5000/api';
+  'https://vprotech-student-faculty-system1.onrender.com/api';
 
 const baseURL =
   process.env.EXPO_PUBLIC_API_URL?.trim() || defaultBaseURL;

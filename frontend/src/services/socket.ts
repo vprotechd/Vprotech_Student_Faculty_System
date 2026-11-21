@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 
 const SOCKET_URL =
   process.env.EXPO_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
-  "http://localhost:5000";
+  "https://vprotech-student-faculty-system1.onrender.com";
 
 let chatSocket: Socket | null = null;
 

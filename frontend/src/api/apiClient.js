@@ -1,19 +1,14 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 
-// Android emulators reach the host machine through 10.0.2.2.
-// For a physical phone set EXPO_PUBLIC_API_URL=http://<your-pc-ip>:5000/api
 const DEFAULT_API_URL =
-  Platform.OS === 'android'
-    ? 'http://10.0.2.2:5000/api'
-    : 'http://localhost:5000/api';
+  'https://vprotech-student-faculty-system1.onrender.com/api';
 
 const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL || '').trim() || DEFAULT_API_URL;
 
 if (typeof __DEV__ !== 'undefined' && __DEV__) {
-  console.log('API BASE URL:', API_BASE_URL, '| PLATFORM:', Platform.OS);
+  console.log('API BASE URL:', API_BASE_URL);
 }
 
 // Lets the root layout react to an expired / revoked session.
