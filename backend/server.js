@@ -31,6 +31,11 @@ import subjectRoutes from "./routes/subjectsRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import examRoutes from "./routes/examination/examRoutes.js";
+import questionRoutes from "./routes/examination/questionRoutes.js";
+import examAttemptRoutes from "./routes/examination/examAttemptRoutes.js";
+import evaluationRoutes from "./routes/examination/evaluationRoutes.js";
+
 import classroomRoutes, {
   registerClassroomSockets,
 } from "./routes/classroomRoutes.js";
@@ -283,6 +288,14 @@ app.use(
 );
 
 app.use("/api/chat", chatRoutes);
+
+app.use("/api/examinations", examRoutes);
+
+app.use("/api/examination-questions", questionRoutes);
+
+app.use("/api/examination-attempts", examAttemptRoutes);
+
+app.use("/api/examination-evaluation", evaluationRoutes);
 
 // --------------------------------------------------
 // TEST ROUTES
