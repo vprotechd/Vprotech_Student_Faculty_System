@@ -1560,6 +1560,10 @@ const handleToggleEmployeeStatus = async (employee: Employee) => {
                     key: 'active-users',
                     label: 'Currently Logged In',
                   },
+                  {
+                    key: 'examinations',
+                    label: 'Online Examinations',
+                  },
                 ].map((item) => {
 
                   const isActive =
@@ -1660,6 +1664,9 @@ const handleToggleEmployeeStatus = async (employee: Employee) => {
 
             {activeTab === 'active-users' &&
               'Currently Logged In'}
+
+            {activeTab === 'examinations' &&
+              'Online Examinations'}
           </Text>
 
           <Text style={styles.subHeading}>
@@ -1677,6 +1684,9 @@ const handleToggleEmployeeStatus = async (employee: Employee) => {
 
             {activeTab === 'active-users' &&
               'Accounts with activity in the last five minutes; refreshes automatically.'}
+
+            {activeTab === 'examinations' &&
+              'Create examinations, manage questions, and review student results.'}
           </Text>
 
           {/* =====================================
@@ -2143,6 +2153,21 @@ const handleToggleEmployeeStatus = async (employee: Employee) => {
                 </>
               )}
 
+            </View>
+          )}
+
+          {activeTab === 'examinations' && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.emptyText}>
+                The examination workspace includes exam creation, question management, publishing, student submissions, manual evaluation and result publication.
+              </Text>
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={() => router.push('/faculty/exams' as any)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.primaryBtnText}>Open Examination Management</Text>
+              </TouchableOpacity>
             </View>
           )}
 

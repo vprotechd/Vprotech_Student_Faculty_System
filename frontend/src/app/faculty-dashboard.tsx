@@ -224,6 +224,10 @@ export default function FacultyDashboard() {
     router.push('/faculty/schedule');
   }, [router]);
 
+  const openExaminations = useCallback(() => {
+    router.push('/faculty/exams' as any);
+  }, [router]);
+
   const openMaterials = useCallback(() => {
     router.push('/faculty/upload-materials');
   }, [router]);
@@ -420,6 +424,15 @@ export default function FacultyDashboard() {
             color={COLORS.primary}
             background="#EAF3FC"
             onPress={openSchedule}
+          />
+
+          <ActionButton
+            icon="document-text-outline"
+            title="Examinations"
+            description="Create and evaluate exams"
+            color={COLORS.orange}
+            background="#FFF5E8"
+            onPress={openExaminations}
           />
 
           <ActionButton

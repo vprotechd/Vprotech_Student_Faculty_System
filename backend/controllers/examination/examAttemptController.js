@@ -27,28 +27,39 @@ const calculateResult = (attempt, questions, exam) => {
   let obtainedMarks = 0;
   let descriptivePending = false;
 
-  const questionMap = new Map(
-    questions.map((question) => [
-      String(question._id),
-      question,
+  const answerMap = new Map(
+    attempt.answers.map((answer) => [
+      String(answer.questionId),
+      answer,
     ])
   );
 
-  attempt.answers.forEach((answer) => {
-    const question = questionMap.get(
-      String(answer.questionId)
-    );
+  // Keep one answer record per question, including unanswered descriptive
+  // questions, so faculty can award zero marks and complete evaluation.
+  for (const question of questions) {
+    let answer = answerMap.get(String(question._id));
 
-    if (!question) return;
+    if (!answer) {
+      answer = {
+        questionId: question._id,
+        answer: "",
+        marksAwarded: 0,
+        isEvaluated: false,
+        feedback: "",
+      };
+      attempt.answers.push(answer);
+      answer = attempt.answers[attempt.answers.length - 1];
+      answerMap.set(String(question._id), answer);
+    }
 
     if (question.questionType === "mcq") {
-      const isCorrect =
-        answer.answer.trim() ===
-        String(question.correctAnswer || "").trim();
+      const selected = String(answer.answer || "").trim();
+      const correct = String(question.correctAnswer || "").trim();
+      const isCorrect = selected === correct && selected.length > 0;
 
       if (isCorrect) {
         answer.marksAwarded = question.marks;
-      } else if (answer.answer.trim() && exam.negativeMarking) {
+      } else if (selected && exam.negativeMarking) {
         answer.marksAwarded = -(
           question.negativeMarks || exam.negativeMarks || 0
         );
@@ -62,7 +73,7 @@ const calculateResult = (attempt, questions, exam) => {
       answer.isEvaluated = false;
       descriptivePending = true;
     }
-  });
+  }
 
   const totalMarks = exam.totalMarks;
   const percentage =
@@ -102,6 +113,85 @@ const getStudentExam = async (examId, res) => {
   }
 
   return exam;
+};
+
+
+// RESUME AN EXISTING STUDENT ATTEMPT (including after an app refresh).
+export const getAttemptForStudent = async (req, res) => {
+  try {
+    if (!isStudent(req)) {
+      return res.status(403).json({
+        success: false,
+        message: "Only students can view an exam attempt.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.attemptId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid attempt ID.",
+      });
+    }
+
+    const attempt = await ExamAttempt.findOne({
+      _id: req.params.attemptId,
+      studentId: getUserId(req),
+    });
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: "Exam attempt not found.",
+      });
+    }
+
+    const exam = await Exam.findById(attempt.examId);
+    if (!exam) {
+      return res.status(404).json({
+        success: false,
+        message: "Exam not found.",
+      });
+    }
+
+    if (attempt.status !== "in-progress") {
+      return res.status(409).json({
+        success: false,
+        message: "This examination has already been submitted.",
+        submitted: true,
+      });
+    }
+
+    const questions = await Question.find({ examId: exam._id })
+      .select("-correctAnswer -explanation")
+      .sort({ order: 1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      attempt: {
+        id: attempt._id,
+        startedAt: attempt.startedAt,
+        expiresAt: attempt.expiresAt,
+        status: attempt.status,
+        answers: attempt.answers,
+      },
+      exam: {
+        id: exam._id,
+        title: exam.title,
+        subject: exam.subject,
+        duration: exam.duration,
+        totalMarks: exam.totalMarks,
+        instructions: exam.instructions,
+      },
+      questions,
+    });
+  } catch (error) {
+    console.error("Resume exam attempt error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to resume this exam attempt.",
+    });
+  }
 };
 
 // START EXAM
@@ -362,7 +452,7 @@ export const submitExam = async (req, res) => {
     // the server still controls the submission time.
     const now = new Date();
 
-    if (Array.isArray(req.body.answers)) {
+    if (now < new Date(attempt.expiresAt) && Array.isArray(req.body.answers)) {
       const questionsForValidation = await Question.find({
         examId: exam._id,
       }).select("_id");

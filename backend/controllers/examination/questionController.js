@@ -7,12 +7,6 @@ const getRole = (req) => String(req.user?.role || "").toLowerCase();
 
 const isAdmin = (req) => getRole(req) === "admin";
 
-const canManageExam = (exam) =>
-  isAdmin({ user: { role: "admin" } }) ||
-  String(exam.createdBy) === String(getUserIdForCheck);
-
-let getUserIdForCheck = null;
-
 const verifyExamAccess = async (req, res) => {
   const exam = await Exam.findById(req.params.examId);
 
