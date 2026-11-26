@@ -41,6 +41,7 @@ type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const ACTIONS: { icon: IconName; label: string; path: string }[] = [
   { icon: 'document-text-outline', label: 'Examinations', path: '/student/exams' },
+  { icon: 'clipboard-outline', label: 'Assignments', path: '/student/assignments' },
   { icon: 'calendar-outline', label: 'Timetable', path: '/student/timetable' },
   { icon: 'videocam-outline', label: 'Live Classroom', path: '/student/timetable' },
   { icon: 'library-outline', label: 'Materials', path: '/student/materials' },

@@ -35,6 +35,7 @@ import examRoutes from "./routes/examination/examRoutes.js";
 import questionRoutes from "./routes/examination/questionRoutes.js";
 import examAttemptRoutes from "./routes/examination/examAttemptRoutes.js";
 import evaluationRoutes from "./routes/examination/evaluationRoutes.js";
+import assignmentRoutes from "./routes/assignmentRoutes.js";
 
 import classroomRoutes, {
   registerClassroomSockets,
@@ -296,6 +297,8 @@ app.use("/api/examination-questions", questionRoutes);
 app.use("/api/examination-attempts", examAttemptRoutes);
 
 app.use("/api/examination-evaluation", evaluationRoutes);
+
+app.use("/api/assignments", assignmentRoutes);
 
 // --------------------------------------------------
 // TEST ROUTES

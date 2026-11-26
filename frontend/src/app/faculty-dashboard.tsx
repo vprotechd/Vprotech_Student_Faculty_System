@@ -436,6 +436,15 @@ export default function FacultyDashboard() {
           />
 
           <ActionButton
+            icon="clipboard-outline"
+            title="Assignments"
+            description="Create and evaluate assignments"
+            color={COLORS.primary}
+            background="#EAF3FC"
+            onPress={() => router.push('/faculty/assignments' as any)}
+          />
+
+          <ActionButton
             icon="videocam-outline"
             title="Live Classroom"
             description="Today's classes"

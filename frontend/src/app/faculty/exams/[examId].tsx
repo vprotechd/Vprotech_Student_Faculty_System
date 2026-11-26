@@ -13,6 +13,8 @@ export default function FacultyExamDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [publishSuccess, setPublishSuccess] = useState('');
+  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionText, setQuestionText] = useState('');
   const [questionType, setQuestionType] = useState<'mcq' | 'descriptive'>('mcq');
@@ -47,15 +49,20 @@ export default function FacultyExamDetailScreen() {
     finally { setBusy(false); }
   };
 
-  const handlePublish = () => Alert.alert('Publish examination?', 'Students will be able to see this exam. The sum of question marks must equal the exam total marks.', [
-    { text: 'Cancel', style: 'cancel' },
-    { text: 'Publish', onPress: async () => {
-      setBusy(true); setError('');
-      try { await publishExam(examId); await load(); Alert.alert('Published', 'The examination is now published.'); }
-      catch (e) { setError(getErrorMessage(e, 'Unable to publish exam.')); }
-      finally { setBusy(false); }
-    } },
-  ]);
+  const handlePublish = async () => {
+    setBusy(true); setError(''); setPublishSuccess('');
+    try {
+      const publishedExam = await publishExam(examId);
+      setExam(publishedExam);
+      setShowPublishConfirmation(false);
+      setPublishSuccess('The examination is now published.');
+      await load();
+    } catch (e) {
+      setError(getErrorMessage(e, 'Unable to publish exam.'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   if (loading) return <ExamPage><ExamLoading /></ExamPage>;
   if (!exam) return <ExamPage><ExamHeader title="Manage exam" onBack={() => router.back()} /><ExamNotice text={error || 'Exam not found.'} error /></ExamPage>;
@@ -64,6 +71,15 @@ export default function FacultyExamDetailScreen() {
     <ExamPage>
       <ExamHeader title={exam.title} subtitle={`${exam.subject} • ${exam.className}`} onBack={() => router.back()} />
       {error ? <ExamNotice text={error} error /> : null}
+      {publishSuccess ? <ExamNotice text={publishSuccess} /> : null}
+      {showPublishConfirmation ? <ExamCard>
+        <Text style={examTextStyles.name}>Publish examination?</Text>
+        <Text style={examTextStyles.meta}>Students will be able to see this exam. The sum of question marks must equal the exam total marks.</Text>
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+          <View style={{ flex: 1 }}><ExamButton title="Keep as draft" secondary onPress={() => setShowPublishConfirmation(false)} disabled={busy} /></View>
+          <View style={{ flex: 1 }}><ExamButton title="Publish" onPress={() => void handlePublish()} loading={busy} /></View>
+        </View>
+      </ExamCard> : null}
       <ExamCard>
         <Text style={examTextStyles.name}>Exam settings</Text>
         <ExamPill text={exam.status} color={exam.status === 'published' ? EXAM_COLORS.green : EXAM_COLORS.orange} />
@@ -71,7 +87,7 @@ export default function FacultyExamDetailScreen() {
         <Text style={examTextStyles.meta}>Questions: {questions.length} • Marks assigned: {questions.reduce((sum, q) => sum + Number(q.marks || 0), 0)}</Text>
         <View style={{ marginTop: 12, gap: 9 }}>
           <ExamButton title="View Student Submissions" secondary onPress={() => router.push(`/faculty/exams/submissions/${examId}` as any)} />
-          {['draft', 'scheduled'].includes(exam.status) ? <ExamButton title="Publish Examination" onPress={handlePublish} loading={busy} /> : null}
+          {['draft', 'scheduled'].includes(exam.status) && !showPublishConfirmation ? <ExamButton title="Publish Examination" onPress={() => { setError(''); setShowPublishConfirmation(true); }} loading={busy} /> : null}
           {exam.status !== 'cancelled' && exam.status !== 'completed' ? <ExamButton title="Cancel Examination" secondary onPress={() => Alert.alert('Cancel exam?', 'Students will no longer be able to take this exam.', [{ text: 'Keep exam', style: 'cancel' }, { text: 'Cancel exam', style: 'destructive', onPress: async () => { setBusy(true); try { await cancelExam(examId); await load(); } catch (e) { setError(getErrorMessage(e)); } finally { setBusy(false); } } }])} /> : null}
         </View>
       </ExamCard>

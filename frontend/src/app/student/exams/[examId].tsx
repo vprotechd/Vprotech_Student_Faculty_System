@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { getErrorMessage } from '../../../api/apiClient';
 import { getExam, startExam, type Exam, type ExamQuestion } from '../../../api/examinationApi';
@@ -13,6 +13,7 @@ export default function StudentExamDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState('');
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     let active = true;
@@ -22,6 +23,11 @@ export default function StudentExamDetailsScreen() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [examId]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const begin = async () => {
     setStarting(true); setError('');
@@ -36,8 +42,17 @@ export default function StudentExamDetailsScreen() {
   if (loading) return <ExamPage><ExamLoading /></ExamPage>;
   if (!exam) return <ExamPage><ExamHeader title="Exam details" onBack={() => router.back()} /><ExamNotice text={error || 'Exam not found.'} error /></ExamPage>;
 
-  const now = Date.now();
-  const canStart = exam.status === 'published' && now >= new Date(exam.startTime).getTime() && now <= new Date(exam.endTime).getTime();
+  const startAt = new Date(exam.startTime).getTime();
+  const endAt = new Date(exam.endTime).getTime();
+  const validSchedule = Number.isFinite(startAt) && Number.isFinite(endAt);
+  const canStart = exam.status === 'published' && validSchedule && now >= startAt && now <= endAt;
+  const scheduleMessage = !validSchedule
+    ? 'The exam schedule is invalid. Please contact faculty.'
+    : now < startAt
+      ? `This exam opens at ${new Date(exam.startTime).toLocaleString('en-IN', { timeZoneName: 'short' })}.`
+      : now > endAt
+        ? 'This exam window has ended.'
+        : 'The exam is open. You can start now.';
 
   return (
     <ExamPage>
@@ -52,8 +67,8 @@ export default function StudentExamDetailsScreen() {
           <ExamPill text={`${exam.passingMarks} passing marks`} color={EXAM_COLORS.green} />
           <ExamPill text={`${questions.length} questions`} />
         </View>
-        <Text style={examTextStyles.meta}>Start: {new Date(exam.startTime).toLocaleString('en-IN')}</Text>
-        <Text style={examTextStyles.meta}>End: {new Date(exam.endTime).toLocaleString('en-IN')}</Text>
+        <Text style={examTextStyles.meta}>Start: {new Date(exam.startTime).toLocaleString('en-IN', { timeZoneName: 'short' })}</Text>
+        <Text style={examTextStyles.meta}>End: {new Date(exam.endTime).toLocaleString('en-IN', { timeZoneName: 'short' })}</Text>
         {exam.negativeMarking ? <Text style={examTextStyles.meta}>Negative marking: {exam.negativeMarks || 0} marks per incorrect answer.</Text> : null}
       </ExamCard>
       <ExamCard>
@@ -68,7 +83,7 @@ export default function StudentExamDetailsScreen() {
         <Text style={examTextStyles.meta}>• Descriptive answers may require faculty evaluation.</Text>
         <View style={{ marginTop: 14 }}>
           <ExamButton title={starting ? 'Starting…' : 'Start Examination'} onPress={begin} disabled={!canStart} loading={starting} />
-          {!canStart ? <Text style={[examTextStyles.meta, { textAlign: 'center', marginTop: 8 }]}>This exam can only be started during its scheduled time.</Text> : null}
+          <Text style={[examTextStyles.meta, { textAlign: 'center', marginTop: 8 }]}>{scheduleMessage}</Text>
         </View>
       </ExamCard>
     </ExamPage>
